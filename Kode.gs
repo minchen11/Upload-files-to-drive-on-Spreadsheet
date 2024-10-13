@@ -43,7 +43,7 @@ function getDropdownOptions() {
 }
 
 function saveData(obj) {
-  var folder = DriveApp.getFolderById("1wxAnx8YRZiD5sRsCUph8Ldp5e41daagS"); // Ganti dengan ID folder yang diinginkan
+  var folder = DriveApp.getFolderById("Folder_id"); // Ganti dengan ID folder yang diinginkan
   var rowData = [
     obj.tanggal,    // Tanggal
     obj.nama,       // Nama
