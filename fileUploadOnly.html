@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" crossorigin="anonymous">
+  <style>
+    .frame { padding: 20px; margin: 20px auto; }
+    button { text-transform: uppercase; border-radius: 7px; }
+    #loading { display: none; margin-top: 10px; text-align: center; }
+    #preview { margin-top: 10px; }
+    #preview img { max-width: 100%; max-height: 200px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="frame">
+      <form id="uploadForm">
+        <div class="form-group">
+          <label for="rowNumber">Nomor Baris:</label>
+          <input type="number" class="form-control" id="rowNumber" placeholder="Masukkan nomor baris" required>
+        </div>
+        <div class="form-group">
+          <label for="uploadFile">Upload File:</label>
+          <input type="file" class="form-control-file" id="uploadFile" onchange="encodeFile()" required>
+          <div id="preview"></div> <!-- Tempat untuk menampilkan preview -->
+        </div>
+        <button type="button" class="btn btn-primary" onclick="handleSubmit()">Submit</button>
+      </form>
+
+      <div id="loading">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif" alt="Loading" width="50">
+        <p>Loading...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var uploadFile = {};
+
+    function encodeFile() {
+      var file = document.getElementById("uploadFile").files[0];
+      var reader = new FileReader();
+      
+      reader.onload = function(e) {
+        var previewDiv = document.getElementById("preview");
+        previewDiv.innerHTML = ""; // Clear preview
+
+        if (file.type.startsWith("image/")) {
+          var img = document.createElement("img");
+          img.src = e.target.result;
+          previewDiv.appendChild(img);
+        } else {
+          var fileName = document.createElement("p");
+          fileName.textContent = "File yang dipilih: " + file.name;
+          previewDiv.appendChild(fileName);
+        }
+
+        var base64String = e.target.result.split(",")[1];
+        uploadFile = {
+          name: file.name,
+          type: file.type,
+          data: base64String
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleSubmit() {
+    var rowNumber = document.getElementById("rowNumber").value;
+    
+    if (!rowNumber || !uploadFile.data) {
+      alert("Pastikan nomor baris dan file telah diisi!");
+      return;
+    }
+
+    document.getElementById("loading").style.display = "block";
+
+    google.script.run
+      .withSuccessHandler(function(response) {
+        document.getElementById("loading").style.display = "none";
+        if (response) {
+          Swal.fire({
+          title: 'Success!',
+          text: 'Data has been uploaded!',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: true
+        });
+          document.getElementById("rowNumber").value = "";
+          document.getElementById("uploadFile").value = "";
+          document.getElementById("preview").innerHTML = ""; // Clear preview after submission
+        } else {
+          alert("Gagal mengupload file, cek log.");
+        }
+      })
+      .withFailureHandler(function(error) {
+        document.getElementById("loading").style.display = "none";
+        alert("Error: " + error.message);
+      })
+      .saveFileOnlyData({
+        rowNumber: rowNumber,
+        uploadFile: uploadFile
+      });
+  }
+
+
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+</body>
+</html>

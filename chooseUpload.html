@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .card {
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 15px; /* Meningkatkan border radius */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s; /* Efek transisi */
+        }
+        .card:hover {
+            transform: translateY(-5px); /* Efek hover untuk kartu */
+        }
+        .btn {
+            width: 200px; /* Menentukan lebar tombol */
+            margin-top: 10px;
+            border-radius: 25px; /* Meningkatkan border radius tombol */
+            transition: background-color 0.3s, transform 0.2s; /* Efek transisi */
+        }
+        .btn:hover {
+            background-color: #0056b3; /* Mengubah warna tombol saat hover */
+            transform: scale(1.05); /* Efek zoom saat hover */
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        p {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #loading {
+            display: none; /* Awalnya sembunyikan loading spinner */
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>Pilih Opsi Upload</h2>
+            <p>Silakan pilih salah satu opsi di bawah ini untuk melanjutkan:</p>
+            <div class="text-center">
+                <button class="btn btn-primary" onclick="showFullUploadForm()">Upload Data Lengkap</button>
+                <button class="btn btn-secondary" onclick="showFileOnlyUploadForm()">Upload File Saja</button>
+            </div>
+        </div>
+        <div id="loading">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif" alt="Loading" width="50">
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script>
+        function showFullUploadForm() {
+            showLoading(); // Menampilkan spinner loading
+
+            // Simulasikan waktu proses dengan setTimeout
+            setTimeout(function() {
+                google.script.run
+                    .withSuccessHandler(function() {
+                        hideLoading(); // Menyembunyikan spinner loading setelah berhasil
+                    })
+                    .showUploadForm();
+            }, 500); // Ubah nilai ini sesuai kebutuhan waktu yang diperlukan
+        }
+        
+        function showFileOnlyUploadForm() {
+            showLoading(); // Menampilkan spinner loading
+
+            // Simulasikan waktu proses dengan setTimeout
+            setTimeout(function() {
+                google.script.run
+                    .withSuccessHandler(function() {
+                        hideLoading(); // Menyembunyikan spinner loading setelah berhasil
+                    })
+                    .showFileUploadOnlyForm();
+            }, 500); // Ubah nilai ini sesuai kebutuhan waktu yang diperlukan
+        }
+
+        function showLoading() {
+            document.getElementById("loading").style.display = "block"; // Menampilkan loading spinner
+            document.querySelector('.container').style.opacity = '0.5'; // Mengurangi opacity kontainer
+        }
+
+        function hideLoading() {
+            document.getElementById("loading").style.display = "none"; // Menyembunyikan loading spinner
+            document.querySelector('.container').style.opacity = '1'; // Mengembalikan opacity kontainer
+        }
+    </script>
+</body>
+</html>
