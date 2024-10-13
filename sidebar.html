@@ -17,6 +17,7 @@
 <body>
   <div class="container">
     <div class="frame">
+      <button type="button" class="btn btn-secondary" onclick="google.script.run.withSuccessHandler(google.script.host.close).showUploadChoiceSidebar()">Kembali</button> <!-- Tombol Kembali -->
       <form id="uploadForm">
         <div class="form-group">
           <label for="tanggal">Tanggal:</label>
@@ -238,82 +239,73 @@
       });
     }
 
-
     function removeDynamicUpload(button) {
       var dynamicUploadDiv = button.parentElement; // Ambil div yang berisi tombol hapus
       dynamicUploadDiv.remove(); // Hapus div
     }
 
     function handleSubmit() {
-    var tanggal = document.getElementById("tanggal").value;
-    var nama = document.getElementById("nama").value;
-    var akun = document.getElementById("akun").value;
-    var ponsel = document.getElementById("ponsel").value;
-    var catatan = document.getElementById("catatan").value;
-    var jumlah = document.getElementById("jumlah").value;
-    var campaign = document.getElementById("campaign").value;
-    var amil = document.getElementById("amil").value;
+      var tanggal = document.getElementById("tanggal").value;
+      var nama = document.getElementById("nama").value;
+      var akun = document.getElementById("akun").value;
+      var ponsel = document.getElementById("ponsel").value;
+      var catatan = document.getElementById("catatan").value;
+      var jumlah = document.getElementById("jumlah").value;
+      var campaign = document.getElementById("campaign").value;
+      var amil = document.getElementById("amil").value;
 
-    if (!tanggal || !nama || !akun || !ponsel || !catatan || !jumlah || !campaign || !amil || uploadFiles.length === 0) {
-      Swal.fire({
-        title: 'Error!',
-        text: 'Please fill out all fields and upload at least one file!',
-        icon: 'warning'
-      });
-      return;
-    }
-
-    document.getElementById("loading").style.display = "block";
-
-    // Gabungkan semua file yang diupload
-    var allUploadedFiles = [...uploadFiles, ...additionalUploadFiles, ...dynamicUploadFiles];
-
-    google.script.run
-      .withSuccessHandler(function(urls) {
-        document.getElementById("loading").style.display = "none";
+      if (!tanggal || !nama || !akun || !ponsel || !catatan || !jumlah || !campaign || !amil || uploadFiles.length === 0) {
         Swal.fire({
-          title: 'Success!',
-          text: 'Data has been uploaded!',
-          icon: 'success',
-          timer: 2000,
-          showConfirmButton: false
+          title: 'Error!',
+          text: 'Please fill out all fields and upload at least one file!',
+          icon: 'warning'
         });
-        
-        // Tampilkan URL file di preview
-        var previewDiv = document.getElementById("preview");
-        previewDiv.innerHTML = ""; // Clear previous preview
+        return;
+      }
 
-        // Menampilkan setiap URL di baris baru
-        urls.forEach(function(url) {
-          var link = document.createElement("a");
-          link.href = url;
-          link.textContent = url;
-          link.target = "_blank"; // Membuka link di tab baru
-          var lineBreak = document.createElement("br");
-          previewDiv.appendChild(link);
-          previewDiv.appendChild(lineBreak);
+      document.getElementById("loading").style.display = "block";
+
+      // Gabungkan semua file yang diupload
+      var allUploadedFiles = [...uploadFiles, ...additionalUploadFiles, ...dynamicUploadFiles];
+
+      google.script.run
+        .withSuccessHandler(function() {
+          document.getElementById("loading").style.display = "none";
+          Swal.fire({
+            title: 'Success!',
+            text: 'Data has been uploaded!',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          // Reset semua field
+          document.getElementById("uploadForm").reset();
+
+
+          // Clear preview areas
+          document.getElementById("preview").innerHTML = ""; // Clear preview after submission
+          document.getElementById("additionalPreview").innerHTML = ""; // Clear additional preview
+          document.getElementById("dynamicUploadSection").innerHTML = ""; // Clear dynamic uploads after submission
+          
+
+          // Reset arrays for files
+          uploadFiles = [];
+          additionalUploadFiles = [];
+          dynamicUploadFiles = [];
+          
+        })
+        .saveData({
+          tanggal: tanggal,
+          nama: nama,
+          akun: akun,
+          ponsel: ponsel,
+          catatan: catatan,
+          jumlah: jumlah,
+          uploadFiles: allUploadedFiles, // Kirim gabungan file yang diupload
+          campaign: campaign,
+          amil: amil
         });
-
-        document.getElementById("uploadForm").reset();
-        document.getElementById("dynamicUploadSection").innerHTML = ""; // Clear dynamic uploads after submission
-      })
-      .saveData({
-        tanggal: tanggal,
-        nama: nama,
-        akun: akun,
-        ponsel: ponsel,
-        catatan: catatan,
-        jumlah: jumlah,
-        uploadFiles: allUploadedFiles, // Kirim gabungan file yang diupload
-        campaign: campaign,
-        amil: amil
-      });
-  }
-
-  function goBack() {
-            // Kembali ke menu pemilihan
-            google.script.run.showChooseUploadMenu();
-        }
+    }
 
     window.onload = populateDropdowns; // Panggil fungsi untuk mengisi dropdown saat halaman dimuat
   </script>

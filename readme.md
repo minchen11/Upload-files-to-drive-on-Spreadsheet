@@ -1,12 +1,23 @@
-# Donation File Upload App
+## Deskripsi
 
-Aplikasi berbasis Google Apps Script untuk mengelola bukti donasi. Program ini memungkinkan pengguna untuk mengupload file bukti donasi ke Google Drive dan mencatat informasi donatur serta detail donasi ke dalam Google Spreadsheet.
+Aplikasi ini memungkinkan pengguna untuk mengupload bukti donasi melalui antarmuka web yang sederhana dan mudah digunakan. File yang diupload disimpan dalam Google Drive dan terintegrasi dengan Google Apps Script untuk pengolahan data lebih lanjut.
 
 ## Fitur
-- Upload file bukti donasi ke Google Drive.
-- Menyimpan informasi donatur ke dalam Google Spreadsheet.
-- Dropdown untuk pilihan akun, campaign, dan amil.
-- Preview file yang diupload sebelum submit.
+
+- Formulir pengisian data donatur
+- Upload file bukti donasi
+- Preview file sebelum diupload
+- Kemampuan untuk menambahkan lebih dari satu file
+- Validasi untuk memastikan semua data diisi
+- Notifikasi keberhasilan atau kegagalan upload
+
+## Teknologi yang Digunakan
+
+- HTML
+- CSS
+- JavaScript
+- Google Apps Script
+- Bootstrap (untuk styling)
 
 ## Prerequisites
 - Akun Google untuk mengakses Google Drive dan Google Sheets.
@@ -23,7 +34,8 @@ Aplikasi berbasis Google Apps Script untuk mengelola bukti donasi. Program ini m
 
 3. **Salin Kode**:
    - Ganti isi file `Code.gs` dengan kode yang telah Anda buat untuk upload file.
-   - Tambahkan file `sidebar.html` untuk antarmuka pengguna.
+   - Tambahkan file `sidebar.html`, `fileUploadOnly.html`, `chooseUpload.html` untuk antarmuka pengguna.
+
 
 4. **Simpan dan Jalankan**:
    - Simpan project dengan nama yang sesuai.
@@ -48,5 +60,8 @@ Aplikasi berbasis Google Apps Script untuk mengelola bukti donasi. Program ini m
 ## Kontribusi
 Jika Anda ingin berkontribusi, silakan buat pull request atau buka isu di repository ini.
 
-## Lisensi
-Proyek ini dilisensikan di bawah [Lisensi MIT](LICENSE).
+# Support Me
+
+Jika program yang saya bagikan di sini bermanfaat bagi Anda, pertimbangkan untuk mendukung saya melalui Saweria. Dukungan Anda akan membantu saya untuk terus membuat dan memperbarui konten yang berguna. Terima kasih atas dukungan Anda!
+
+Kunjungi [Saweria](https://saweria.co/snowkel) untuk mendukung kami!

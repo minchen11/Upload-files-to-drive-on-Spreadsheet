@@ -25,6 +25,7 @@
           <div id="preview"></div> <!-- Tempat untuk menampilkan preview -->
         </div>
         <button type="button" class="btn btn-primary" onclick="handleSubmit()">Submit</button>
+        <button type="button" class="btn btn-secondary" onclick="google.script.run.withSuccessHandler(google.script.host.close).showUploadChoiceSidebar()">Kembali</button> <!-- Tombol Kembali -->
       </form>
 
       <div id="loading">
@@ -35,7 +36,7 @@
   </div>
 
   <script>
-    var uploadFile = {};
+    var uploadFile = null; // Ubah ke null untuk menandakan tidak ada file terupload sebelumnya
 
     function encodeFile() {
       var file = document.getElementById("uploadFile").files[0];
@@ -66,44 +67,50 @@
     }
 
     function handleSubmit() {
-    var rowNumber = document.getElementById("rowNumber").value;
-    
-    if (!rowNumber || !uploadFile.data) {
-      alert("Pastikan nomor baris dan file telah diisi!");
-      return;
-    }
+      var rowNumber = document.getElementById("rowNumber").value;
 
-    document.getElementById("loading").style.display = "block";
-
-    google.script.run
-      .withSuccessHandler(function(response) {
-        document.getElementById("loading").style.display = "none";
-        if (response) {
-          Swal.fire({
-          title: 'Success!',
-          text: 'Data has been uploaded!',
-          icon: 'success',
-          timer: 2000,
-          showConfirmButton: true
+      // Pastikan ada file yang diupload
+      if (!rowNumber || !uploadFile) {
+        Swal.fire({
+          title: 'Error!',
+          text: 'Please fill out all fields and upload at least one file!',
+          icon: 'warning'
         });
-          document.getElementById("rowNumber").value = "";
-          document.getElementById("uploadFile").value = "";
-          document.getElementById("preview").innerHTML = ""; // Clear preview after submission
-        } else {
-          alert("Gagal mengupload file, cek log.");
-        }
-      })
-      .withFailureHandler(function(error) {
-        document.getElementById("loading").style.display = "none";
-        alert("Error: " + error.message);
-      })
-      .saveFileOnlyData({
-        rowNumber: rowNumber,
-        uploadFile: uploadFile
-      });
-  }
+        return;
+      }
 
+      document.getElementById("loading").style.display = "block";
 
+      google.script.run
+        .withSuccessHandler(function(response) {
+          document.getElementById("loading").style.display = "none";
+          if (response) {
+            Swal.fire({
+              title: 'Success!',
+              text: 'Data has been uploaded!',
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: true
+            });
+            // Reset semua field
+            document.getElementById("rowNumber").value = "";
+            document.getElementById("uploadFile").value = "";
+            uploadFile = null; // Reset uploadFile ke null
+            document.getElementById("preview").innerHTML = ""; // Clear preview after submission
+            document.getElementById('uploadForm').reset(); // Reset form
+          } else {
+            alert("Gagal mengupload file, cek log.");
+          }
+        })
+        .withFailureHandler(function(error) {
+          document.getElementById("loading").style.display = "none";
+          alert("Error: " + error.message);
+        })
+        .saveFileOnlyData({
+          rowNumber: rowNumber,
+          uploadFile: uploadFile
+        });
+    }
   </script>
 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
