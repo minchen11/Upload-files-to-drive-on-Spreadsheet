@@ -9,7 +9,9 @@
     button { text-transform: uppercase; border-radius: 7px; }
     #loading { display: none; margin-top: 10px; text-align: center; }
     #preview { margin-top: 10px; }
-    #preview img { max-width: 100%; max-height: 200px; }
+    #preview img { max-width: 100%; max-height: 200px; margin: 5px; }
+    .file-preview { margin-bottom: 10px; }
+    .dynamic-file-upload { margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -56,8 +58,22 @@
         </div>
         <div class="form-group">
           <label for="uploadFile">Upload File:</label>
-          <input type="file" class="form-control-file" id="uploadFile" onchange="encodeFile()">
+          <input type="file" class="form-control-file" id="uploadFile" multiple onchange="encodeFiles()">
           <div id="preview"></div> <!-- Tempat untuk menampilkan preview -->
+          <div class="form-group">
+            <input type="checkbox" id="addMoreFiles" onchange="toggleAdditionalUpload()">
+            <label for="addMoreFiles">Tambah Lagi File Tambahan</label>
+          </div>
+        </div>
+        <div id="additionalUploadSection" style="display: none;">
+          <label>Upload File Tambahan:</label>
+          <input type="file" class="form-control-file" id="additionalUploadFile" multiple onchange="encodeAdditionalFiles()">
+          <div id="additionalPreview"></div> <!-- Tempat untuk menampilkan preview tambahan -->
+          <div class="form-group">
+            <input type="checkbox" id="addMoreFilesDynamic" onchange="toggleDynamicUpload()">
+            <label for="addMoreFilesDynamic">Tambah Lagi File Tambahan</label>
+          </div>
+          <div id="dynamicUploadSection"></div> <!-- Tempat untuk upload dinamis -->
         </div>
         <button type="button" class="btn btn-primary" onclick="handleSubmit()">Submit</button>
       </form>
@@ -70,7 +86,9 @@
   </div>
 
   <script>
-    var uploadFile = {};
+    var uploadFiles = [];
+    var additionalUploadFiles = [];
+    var dynamicUploadFiles = [];
 
     // Fungsi untuk menghilangkan duplikat dan mengisi dropdown dengan data
     function populateDropdowns() {
@@ -102,33 +120,127 @@
       });
     }
 
-    function encodeFile() {
-      var file = document.getElementById("uploadFile").files[0];
-      var reader = new FileReader();
-      
-      // Menampilkan preview file
-      reader.onload = function(e) {
-        var previewDiv = document.getElementById("preview");
-        previewDiv.innerHTML = ""; // Clear previous preview
-        
-        if (file.type.startsWith("image/")) {
-          var img = document.createElement("img");
-          img.src = e.target.result;
-          previewDiv.appendChild(img);
-        } else {
-          var fileName = document.createElement("p");
-          fileName.textContent = "File yang dipilih: " + file.name;
-          previewDiv.appendChild(fileName);
-        }
+    function encodeFiles() {
+      var files = document.getElementById("uploadFile").files;
+      uploadFiles = []; // Reset array
 
-        var base64String = e.target.result.split(",")[1];
-        uploadFile = {
-          name: file.name,
-          type: file.type,
-          data: base64String
+      var previewDiv = document.getElementById("preview");
+      previewDiv.innerHTML = ""; // Clear previous preview
+
+      Array.from(files).forEach(file => {
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+          if (file.type.startsWith("image/")) {
+            var img = document.createElement("img");
+            img.src = e.target.result;
+            previewDiv.appendChild(img);
+          } else {
+            var fileName = document.createElement("p");
+            fileName.textContent = "File yang dipilih: " + file.name;
+            previewDiv.appendChild(fileName);
+          }
+
+          var base64String = e.target.result.split(",")[1];
+          uploadFiles.push({
+            name: file.name,
+            type: file.type,
+            data: base64String
+          });
         };
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function encodeAdditionalFiles() {
+      var files = document.getElementById("additionalUploadFile").files;
+      additionalUploadFiles = []; // Reset array
+
+      var additionalPreviewDiv = document.getElementById("additionalPreview");
+      additionalPreviewDiv.innerHTML = ""; // Clear previous preview
+
+      Array.from(files).forEach(file => {
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+          if (file.type.startsWith("image/")) {
+            var img = document.createElement("img");
+            img.src = e.target.result;
+            additionalPreviewDiv.appendChild(img);
+          } else {
+            var fileName = document.createElement("p");
+            fileName.textContent = "File tambahan yang dipilih: " + file.name;
+            additionalPreviewDiv.appendChild(fileName);
+          }
+
+          var base64String = e.target.result.split(",")[1];
+          additionalUploadFiles.push({
+            name: file.name,
+            type: file.type,
+            data: base64String
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function toggleAdditionalUpload() {
+      var additionalSection = document.getElementById("additionalUploadSection");
+      additionalSection.style.display = document.getElementById("addMoreFiles").checked ? "block" : "none";
+    }
+
+    function toggleDynamicUpload() {
+      var dynamicSection = document.getElementById("dynamicUploadSection");
+      if (document.getElementById("addMoreFilesDynamic").checked) {
+        var newUploadDiv = document.createElement("div");
+        newUploadDiv.className = "dynamic-file-upload";
+        newUploadDiv.innerHTML = `
+          <input type="file" class="form-control-file" onchange="encodeDynamicFiles(this)">
+          <div class="file-preview"></div> <!-- Tempat untuk menampilkan preview -->
+          <button type="button" class="btn btn-danger" onclick="removeDynamicUpload(this)">Hapus</button>
+          <div class="form-group">
+            <input type="checkbox" onchange="toggleDynamicUpload()"> 
+            <label>Tambah Lagi File Tambahan</label>
+          </div>
+        `;
+        dynamicSection.appendChild(newUploadDiv);
+      }
+    }
+
+    function encodeDynamicFiles(input) {
+      var files = input.files;
+      var dynamicPreviewDiv = input.nextElementSibling; // Preview div
+      dynamicPreviewDiv.innerHTML = ""; // Clear previous preview
+      dynamicUploadFiles = []; // Reset array for dynamic uploads
+
+      Array.from(files).forEach(file => {
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+          if (file.type.startsWith("image/")) {
+            var img = document.createElement("img");
+            img.src = e.target.result;
+            dynamicPreviewDiv.appendChild(img);
+          } else {
+            var fileName = document.createElement("p");
+            fileName.textContent = "File dinamis yang dipilih: " + file.name;
+            dynamicPreviewDiv.appendChild(fileName);
+          }
+
+          var base64String = e.target.result.split(",")[1];
+          dynamicUploadFiles.push({
+            name: file.name,
+            type: file.type,
+            data: base64String
+          });
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function removeDynamicUpload(button) {
+      var dynamicUploadDiv = button.parentElement; // Ambil div yang berisi tombol hapus
+      dynamicUploadDiv.remove(); // Hapus div
     }
 
     function handleSubmit() {
@@ -141,16 +253,19 @@
       var campaign = document.getElementById("campaign").value;
       var amil = document.getElementById("amil").value;
 
-      if (!tanggal || !nama || !akun || !ponsel || !catatan || !jumlah || !campaign || !amil || !uploadFile.data) {
+      if (!tanggal || !nama || !akun || !ponsel || !catatan || !jumlah || !campaign || !amil || uploadFiles.length === 0) {
         Swal.fire({
           title: 'Error!',
-          text: 'Please fill out all fields!',
+          text: 'Please fill out all fields and upload at least one file!',
           icon: 'warning'
         });
         return;
       }
 
       document.getElementById("loading").style.display = "block";
+
+      // Gabungkan semua file yang diupload
+      var allUploadedFiles = [...uploadFiles, ...additionalUploadFiles, ...dynamicUploadFiles];
 
       google.script.run
         .withSuccessHandler(function() {
@@ -164,6 +279,8 @@
           });
           document.getElementById("uploadForm").reset();
           document.getElementById("preview").innerHTML = ""; // Clear preview after submission
+          document.getElementById("additionalPreview").innerHTML = ""; // Clear additional preview after submission
+          document.getElementById("dynamicUploadSection").innerHTML = ""; // Clear dynamic uploads after submission
         })
         .saveData({
           tanggal: tanggal,
@@ -172,7 +289,7 @@
           ponsel: ponsel,
           catatan: catatan,
           jumlah: jumlah,
-          uploadFile: uploadFile,
+          uploadFiles: allUploadedFiles, // Kirim gabungan file yang diupload
           campaign: campaign,
           amil: amil
         });

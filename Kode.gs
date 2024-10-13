@@ -26,14 +26,14 @@ function showSidebar() {
 }
 
 function getDropdownOptions() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('donasi'); // Ganti dengan nama sheet yang sesuai
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Donasi Via Wa Center'); // Ganti dengan nama sheet yang sesuai
   var akunRange = sheet.getRange('C2:C'); // Ganti dengan rentang untuk akun
   var campaignRange = sheet.getRange('H2:H'); // Ganti dengan rentang untuk campaign
   var amilRange = sheet.getRange('I2:I'); // Ganti dengan rentang untuk amil
 
-  var akunOptions = akunRange.getValues().flat().filter(Boolean);
-  var campaignOptions = campaignRange.getValues().flat().filter(Boolean);
-  var amilOptions = amilRange.getValues().flat().filter(Boolean);
+  var akunOptions = [...new Set(akunRange.getValues().flat().filter(Boolean))]; // Menghilangkan duplikat
+  var campaignOptions = [...new Set(campaignRange.getValues().flat().filter(Boolean))]; // Menghilangkan duplikat
+  var amilOptions = [...new Set(amilRange.getValues().flat().filter(Boolean))]; // Menghilangkan duplikat
 
   return {
     akun: akunOptions,
@@ -56,14 +56,19 @@ function saveData(obj) {
     obj.amil        // Amil (diisi manual)
   ];
 
-  if (obj.uploadFile) {
-    let files = obj.uploadFile;
-    let datafile = Utilities.base64Decode(files.data);
-    let blob = Utilities.newBlob(datafile, files.type, files.name);
-    let file = folder.createFile(blob).getUrl();
-    rowData[6] = file; // Menyimpan URL file ke kolom "Bukti Transfer"
+  if (obj.uploadFiles && obj.uploadFiles.length > 0) {
+    let fileUrls = []; // Array untuk menyimpan URL file
+
+    obj.uploadFiles.forEach(file => {
+      let datafile = Utilities.base64Decode(file.data);
+      let blob = Utilities.newBlob(datafile, file.type, file.name);
+      let fileUrl = folder.createFile(blob).getUrl();
+      fileUrls.push(fileUrl); // Tambahkan URL file ke array
+    });
+
+    rowData[6] = fileUrls.join(",\n"); // Gabungkan URL file menjadi satu string yang dipisahkan koma
   }
 
-  SpreadsheetApp.getActiveSpreadsheet().getSheetByName('donasi').appendRow(rowData);
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Donasi Via Wa Center').appendRow(rowData);
   return true;
 }
