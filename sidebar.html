@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" crossorigin="anonymous">
+  <style>
+    body { /* Tambahkan styling sesuai kebutuhan */ }
+    .frame { padding: 20px; margin: 40px auto; }
+    button { text-transform: uppercase; border-radius: 7px; }
+    #loading { display: none; margin-top: 10px; text-align: center; }
+    #preview { margin-top: 10px; }
+    #preview img { max-width: 100%; max-height: 200px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="frame">
+      <form id="uploadForm">
+        <div class="form-group">
+          <label for="tanggal">Tanggal:</label>
+          <input type="date" class="form-control" id="tanggal" required>
+        </div>
+        <div class="form-group">
+          <label for="nama">Nama Donatur:</label>
+          <input type="text" class="form-control" id="nama" placeholder="Masukkan nama" required>
+        </div>
+        <div class="form-group">
+          <label for="akun">Akun:</label>
+          <select class="form-control" id="akun" required>
+            <option value="">Pilih Akun</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="ponsel">Ponsel:</label>
+          <input type="text" class="form-control" id="ponsel" placeholder="Masukkan nomor ponsel" required>
+        </div>
+        <div class="form-group">
+          <label for="catatan">Catatan:</label>
+          <input type="text" class="form-control" id="catatan" placeholder="Masukkan catatan" required>
+        </div>
+        <div class="form-group">
+          <label for="jumlah">Jumlah:</label>
+          <input type="number" class="form-control" id="jumlah" placeholder="Masukkan jumlah" required>
+        </div>
+        <div class="form-group">
+          <label for="campaign">Campaign:</label>
+          <select class="form-control" id="campaign" required>
+            <option value="">Pilih Campaign</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="amil">Amil:</label>
+          <select class="form-control" id="amil" required>
+            <option value="">Pilih Amil</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="uploadFile">Upload File:</label>
+          <input type="file" class="form-control-file" id="uploadFile" onchange="encodeFile()">
+          <div id="preview"></div> <!-- Tempat untuk menampilkan preview -->
+        </div>
+        <button type="button" class="btn btn-primary" onclick="handleSubmit()">Submit</button>
+      </form>
+
+      <div id="loading">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Loading_icon.gif" alt="Loading" width="50">
+        <p>Loading...</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var uploadFile = {};
+
+    // Fungsi untuk menghilangkan duplikat dan mengisi dropdown dengan data
+    function populateDropdowns() {
+      var akunSelect = document.getElementById('akun');
+      var uniqueAkunOptions = [...new Set(akunOptions)];
+      uniqueAkunOptions.forEach(function(option) {
+        var opt = document.createElement('option');
+        opt.value = option;
+        opt.innerHTML = option;
+        akunSelect.appendChild(opt);
+      });
+
+      var campaignSelect = document.getElementById('campaign');
+      var uniqueCampaignOptions = [...new Set(campaignOptions)];
+      uniqueCampaignOptions.forEach(function(option) {
+        var opt = document.createElement('option');
+        opt.value = option;
+        opt.innerHTML = option;
+        campaignSelect.appendChild(opt);
+      });
+
+      var amilSelect = document.getElementById('amil');
+      var uniqueAmilOptions = [...new Set(amilOptions)];
+      uniqueAmilOptions.forEach(function(option) {
+        var opt = document.createElement('option');
+        opt.value = option;
+        opt.innerHTML = option;
+        amilSelect.appendChild(opt);
+      });
+    }
+
+    function encodeFile() {
+      var file = document.getElementById("uploadFile").files[0];
+      var reader = new FileReader();
+      
+      // Menampilkan preview file
+      reader.onload = function(e) {
+        var previewDiv = document.getElementById("preview");
+        previewDiv.innerHTML = ""; // Clear previous preview
+        
+        if (file.type.startsWith("image/")) {
+          var img = document.createElement("img");
+          img.src = e.target.result;
+          previewDiv.appendChild(img);
+        } else {
+          var fileName = document.createElement("p");
+          fileName.textContent = "File yang dipilih: " + file.name;
+          previewDiv.appendChild(fileName);
+        }
+
+        var base64String = e.target.result.split(",")[1];
+        uploadFile = {
+          name: file.name,
+          type: file.type,
+          data: base64String
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleSubmit() {
+      var tanggal = document.getElementById("tanggal").value;
+      var nama = document.getElementById("nama").value;
+      var akun = document.getElementById("akun").value;
+      var ponsel = document.getElementById("ponsel").value;
+      var catatan = document.getElementById("catatan").value;
+      var jumlah = document.getElementById("jumlah").value;
+      var campaign = document.getElementById("campaign").value;
+      var amil = document.getElementById("amil").value;
+
+      if (!tanggal || !nama || !akun || !ponsel || !catatan || !jumlah || !campaign || !amil || !uploadFile.data) {
+        Swal.fire({
+          title: 'Error!',
+          text: 'Please fill out all fields!',
+          icon: 'warning'
+        });
+        return;
+      }
+
+      document.getElementById("loading").style.display = "block";
+
+      google.script.run
+        .withSuccessHandler(function() {
+          document.getElementById("loading").style.display = "none";
+          Swal.fire({
+            title: 'Success!',
+            text: 'Data has been uploaded!',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          document.getElementById("uploadForm").reset();
+          document.getElementById("preview").innerHTML = ""; // Clear preview after submission
+        })
+        .saveData({
+          tanggal: tanggal,
+          nama: nama,
+          akun: akun,
+          ponsel: ponsel,
+          catatan: catatan,
+          jumlah: jumlah,
+          uploadFile: uploadFile,
+          campaign: campaign,
+          amil: amil
+        });
+    }
+
+    window.onload = populateDropdowns; // Panggil fungsi untuk mengisi dropdown saat halaman dimuat
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+</body>
+</html>
